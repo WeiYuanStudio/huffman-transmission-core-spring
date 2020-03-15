@@ -6,11 +6,11 @@ import club.piclight.hw.huffmancore.SocketUtil.Binary.ByteToBinary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -77,23 +77,27 @@ public class MessageListener extends Thread {
 
                 } else if (head == CONTENT_HEAD) {
                     /*Protocol v1 Type Data*/ //Todo Refactor to a new class
+
+                    /* Handle hash part */
                     byte[] hashByte = new byte[HASH_B_LEN]; //Hash
                     System.arraycopy(byteData, PROTOCOL_B_LEN, hashByte, 0, HASH_B_LEN);
+                    String binaryHash = new ByteToBinary(hashByte).getBinary(); //String格式二进制零一代码
+                    String hash = Integer.toHexString(Integer.parseInt(binaryHash, 2));
 
+                    /* Handle message length part */
                     byte[] dataLengthByte = new byte[CONTENT_LEN_B_LEN]; //数据字段01哈夫曼编码长度
                     System.arraycopy(byteData, PROTOCOL_B_LEN + HASH_B_LEN, dataLengthByte, 0, CONTENT_LEN_B_LEN);
-
-                    byte[] dataByte = new byte[byteData.length - CONTENT_HEAD_LEN]; //数据字段字节全拷贝
-                    System.arraycopy(byteData, CONTENT_HEAD_LEN, dataByte, 0, byteData.length - CONTENT_HEAD_LEN);
-
                     int contentBinaryCodeLen = Integer.parseInt(new ByteToBinary(dataLengthByte).getBinary(), 2); //二进制哈夫曼编码长度
 
+                    /* Handle binary huffman message */
+                    byte[] dataByte = new byte[byteData.length - CONTENT_HEAD_LEN]; //数据字段字节全拷贝
+                    System.arraycopy(byteData, CONTENT_HEAD_LEN, dataByte, 0, byteData.length - CONTENT_HEAD_LEN);
                     String contentString = new ByteToBinary(dataByte, contentBinaryCodeLen).getBinary(); //从字节解码二进制哈夫曼编码
 
                     /* Database save message*/
                     Message message = new Message();
-                    message.setHash("39c5bb");
-
+                    message.setHash(hash);
+                    message.setDate(new Date());
                     messageRepository.save(message);
                 } else {
                     /*No such protocol*/
@@ -102,15 +106,13 @@ public class MessageListener extends Thread {
 
                 /*Response*/
                 s.getOutputStream();
+                //Todo
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
-                Message message = new Message();
-                message.setHash("39c5bb");
-
-                messageRepository.save(message);
                 /* 兜低，防止线程异常抛出跑死 */
                 e.printStackTrace();
+                logger.info("Resolve protocol failed");
             }
         }
     }
