@@ -46,13 +46,20 @@ public class MessageSender {
         OutputStream out = socket.getOutputStream();
         out.write(dictByte);
         out.close();
+        socket.close();
 
 
         /* Build huffman code */
         String huffmanData = new HuffmanBinaryMsgBuilder(data, map).build(); //Message huffman 01 code
+        MessagePacker huffmanPacker = new MessagePacker(Type.CONTENT, hash, huffmanData);
+        byte[] codeByte = huffmanPacker.pack();
 
         logger.info("Huffman Message Code:" + huffmanData);
 
-
+        Socket socket1 = new Socket(ip, REMOTE_PORT);
+        OutputStream out1 = socket1.getOutputStream();
+        out1.write(codeByte);
+        out1.close();
+        socket1.close();
     }
 }

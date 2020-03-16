@@ -6,11 +6,13 @@ import club.piclight.hw.huffmancore.DB.MessageRepository;
 import club.piclight.hw.huffmancore.Model.HuffmanData;
 import club.piclight.hw.huffmancore.Model.HuffmanDict;
 import club.piclight.hw.huffmancore.Model.Message;
+import club.piclight.hw.huffmancore.SocketUtil.MessageSender;
 import club.piclight.hw.huffmancore.ViewModel.Request.SendMessageRequestModel;
 import club.piclight.hw.huffmancore.ViewModel.Response.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -82,6 +84,13 @@ public class FrontAPI {
     public Status SendMessage(@RequestBody SendMessageRequestModel requestModel) {
         logger.info("" + requestModel.getIp());
         logger.info("Message" + requestModel.getData());
+        MessageSender sender = new MessageSender(requestModel.getIp(), requestModel.getData());
+        try {
+            sender.send();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new Status(500, "Message send failed");
+        }
         return new Status(200, "Message send success");
     }
 }
