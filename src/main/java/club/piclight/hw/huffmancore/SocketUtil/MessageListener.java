@@ -1,6 +1,10 @@
 package club.piclight.hw.huffmancore.SocketUtil;
 
+import club.piclight.hw.huffmancore.DB.HuffmanDataRepository;
+import club.piclight.hw.huffmancore.DB.HuffmanDictRepository;
 import club.piclight.hw.huffmancore.DB.MessageRepository;
+import club.piclight.hw.huffmancore.Model.HuffmanData;
+import club.piclight.hw.huffmancore.Model.HuffmanDict;
 import club.piclight.hw.huffmancore.Model.Message;
 import club.piclight.hw.huffmancore.SocketUtil.Binary.ByteToBinary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +23,12 @@ public class MessageListener extends Thread {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private HuffmanDictRepository huffmanDictRepository;
+
+    @Autowired
+    private HuffmanDataRepository huffmanDataRepository;
 
     private static final int DICT_HEAD = 17; //词典头
     private static final int CONTENT_HEAD = 18; //哈夫曼头
@@ -74,6 +84,22 @@ public class MessageListener extends Thread {
                 /*直接判断字节十六进制值分析协议*/
                 if (head == DICT_HEAD) {
                     /*Protocol v1 Type Dict*/ //Todo Refactor to a new class
+                    /* Handle hash part */
+                    byte[] hashByte = new byte[HASH_B_LEN]; //Hash
+                    System.arraycopy(byteData, PROTOCOL_B_LEN, hashByte, 0, HASH_B_LEN);
+                    String binaryHash = new ByteToBinary(hashByte).getBinary(); //String格式二进制零一代码
+                    String hash = Integer.toHexString(Integer.parseInt(binaryHash, 2));
+
+                    byte[] dictByte = new byte[byteData.length - DICT_HEAD_LEN];
+                    System.arraycopy(byteData, DICT_HEAD_LEN, dictByte, 0, byteData.length - DICT_HEAD_LEN);
+
+                    String dictJson = new String(dictByte);
+
+                    /* Save huffman dict */
+                    HuffmanDict huffmanDict = new HuffmanDict();
+                    huffmanDict.setHash(hash);
+                    huffmanDict.setDict(dictJson);
+                    huffmanDictRepository.save(huffmanDict);
 
                 } else if (head == CONTENT_HEAD) {
                     /*Protocol v1 Type Data*/ //Todo Refactor to a new class
@@ -94,11 +120,17 @@ public class MessageListener extends Thread {
                     System.arraycopy(byteData, CONTENT_HEAD_LEN, dataByte, 0, byteData.length - CONTENT_HEAD_LEN);
                     String contentString = new ByteToBinary(dataByte, contentBinaryCodeLen).getBinary(); //从字节解码二进制哈夫曼编码
 
-                    /* Database save message*/
+                    /* Database save message hash*/
                     Message message = new Message();
                     message.setHash(hash);
                     message.setDate(new Date());
                     messageRepository.save(message);
+
+                    /* Database save message huffman code */
+                    HuffmanData huffmanData = new HuffmanData();
+                    huffmanData.setHash(hash);
+                    huffmanData.setBinaryCode(contentString);
+                    huffmanDataRepository.save(huffmanData);
                 } else {
                     /*No such protocol*/
                     logger.info("Protocol not found");
