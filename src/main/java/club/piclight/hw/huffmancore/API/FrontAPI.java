@@ -7,6 +7,7 @@ import club.piclight.hw.huffmancore.Model.HuffmanData;
 import club.piclight.hw.huffmancore.Model.HuffmanDict;
 import club.piclight.hw.huffmancore.Model.Message;
 import club.piclight.hw.huffmancore.ViewModel.Request.SendMessageRequestModel;
+import club.piclight.hw.huffmancore.ViewModel.Response.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,8 +79,9 @@ public class FrontAPI {
      * 发送消息接口，POST JSON
      */
     @PostMapping("/send")
-    public void SendMessage(@RequestBody SendMessageRequestModel requestModel) {
-        logger.info("IP" + requestModel.getIp());
+    public Status SendMessage(@RequestBody SendMessageRequestModel requestModel) {
+        logger.info("" + requestModel.getIp());
         logger.info("Message" + requestModel.getData());
+        return new Status(200, "Message send success");
     }
 }
