@@ -10,12 +10,11 @@ import club.piclight.hw.huffmancore.Model.Message;
 import club.piclight.hw.huffmancore.SocketUtil.Json.DictDecoder;
 import club.piclight.hw.huffmancore.SocketUtil.MessageSender;
 import club.piclight.hw.huffmancore.ViewModel.Request.SendMessageRequestModel;
+import club.piclight.hw.huffmancore.ViewModel.Response.Plain;
 import club.piclight.hw.huffmancore.ViewModel.Response.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -66,9 +65,9 @@ public class FrontAPI {
      * @return 消息二进制哈夫曼编码
      */
     @GetMapping("/code/{hash}")
-    public String GetHuffmanCode(@PathVariable("hash") String hash) {
+    public Plain GetHuffmanCode(@PathVariable("hash") String hash) {
         HuffmanData data = huffmanDataRepository.getAllByHash(hash);
-        return data.getBinaryCode();
+        return new Plain(200, data.getBinaryCode());
     }
 
     /**
@@ -78,13 +77,13 @@ public class FrontAPI {
      * @return 消息原码
      */
     @GetMapping("/message/{hash}")
-    public String GetMessage(@PathVariable("hash") String hash) {
+    public Plain GetMessage(@PathVariable("hash") String hash) {
         String jsonDict = huffmanDictRepository.getAllByHash(hash).getDict(); //String json dict from database
         String binaryCode = huffmanDataRepository.getAllByHash(hash).getBinaryCode(); //String binary code from database
         DictDecoder dictDecoder = new DictDecoder(jsonDict); //gson load json dict
         Map<Character, String> dictMap =  dictDecoder.decode().getMapDict(); //get map dict
         HuffmanBinaryMsgDecoder msgDecoder = new HuffmanBinaryMsgDecoder(dictMap, binaryCode);
-        return msgDecoder.decode();
+        return new Plain(200, msgDecoder.decode());
     }
 
     /**
