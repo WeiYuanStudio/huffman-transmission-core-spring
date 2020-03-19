@@ -15,5 +15,5 @@ public class HuffmanData {
     private String hash;
 
     @Column(nullable = false)
-    private String binaryCode; //数据前要加下划线防止JPA框架将01序列转成浮点型
+    private String binaryCode;
 }

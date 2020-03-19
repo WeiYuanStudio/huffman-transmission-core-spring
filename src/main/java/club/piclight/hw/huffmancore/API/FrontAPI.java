@@ -68,7 +68,7 @@ public class FrontAPI {
     @GetMapping("/code/{hash}")
     public String GetHuffmanCode(@PathVariable("hash") String hash) {
         HuffmanData data = huffmanDataRepository.getAllByHash(hash);
-        return data.getBinaryCode().substring(1);
+        return data.getBinaryCode();
     }
 
     /**
@@ -80,7 +80,7 @@ public class FrontAPI {
     @GetMapping("/message/{hash}")
     public String GetMessage(@PathVariable("hash") String hash) {
         String jsonDict = huffmanDictRepository.getAllByHash(hash).getDict(); //String json dict from database
-        String binaryCode = huffmanDataRepository.getAllByHash(hash).getBinaryCode().substring(1); //String binary code from database
+        String binaryCode = huffmanDataRepository.getAllByHash(hash).getBinaryCode(); //String binary code from database
         DictDecoder dictDecoder = new DictDecoder(jsonDict); //gson load json dict
         Map<Character, String> dictMap =  dictDecoder.decode().getMapDict(); //get map dict
         HuffmanBinaryMsgDecoder msgDecoder = new HuffmanBinaryMsgDecoder(dictMap, binaryCode);
