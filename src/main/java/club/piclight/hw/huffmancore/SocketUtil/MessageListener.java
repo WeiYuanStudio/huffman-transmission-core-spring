@@ -129,7 +129,7 @@ public class MessageListener extends Thread {
                     /* Database save message huffman code */
                     HuffmanData huffmanData = new HuffmanData();
                     huffmanData.setHash(hash);
-                    huffmanData.setBinaryCode(contentString);
+                    huffmanData.setBinaryCode("_" + contentString); //加下划线防止JPA框架将01序列转成浮点型
                     huffmanDataRepository.save(huffmanData);
                 } else {
                     /*No such protocol*/

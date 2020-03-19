@@ -60,10 +60,10 @@ public class FrontAPI {
      * @param hash 消息哈希
      * @return 消息二进制哈夫曼编码
      */
-    @GetMapping("/huffman_code/{hash}")
+    @GetMapping("/code/{hash}")
     public String GetHuffmanCode(@PathVariable("hash") String hash) {
         HuffmanData data = huffmanDataRepository.getAllByHash(hash);
-        return data.getBinaryCode();
+        return data.getBinaryCode().substring(1);
     }
 
     /**
