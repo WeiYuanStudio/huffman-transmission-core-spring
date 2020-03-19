@@ -3,17 +3,22 @@ package club.piclight.hw.huffmancore.API;
 import club.piclight.hw.huffmancore.DB.HuffmanDataRepository;
 import club.piclight.hw.huffmancore.DB.HuffmanDictRepository;
 import club.piclight.hw.huffmancore.DB.MessageRepository;
+import club.piclight.hw.huffmancore.HuffmanUtil.HuffmanBinaryMsgDecoder;
 import club.piclight.hw.huffmancore.Model.HuffmanData;
 import club.piclight.hw.huffmancore.Model.HuffmanDict;
 import club.piclight.hw.huffmancore.Model.Message;
+import club.piclight.hw.huffmancore.SocketUtil.Json.DictDecoder;
 import club.piclight.hw.huffmancore.SocketUtil.MessageSender;
 import club.piclight.hw.huffmancore.ViewModel.Request.SendMessageRequestModel;
 import club.piclight.hw.huffmancore.ViewModel.Response.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -74,7 +79,12 @@ public class FrontAPI {
      */
     @GetMapping("/message/{hash}")
     public String GetMessage(@PathVariable("hash") String hash) {
-        return "Hello World";
+        String jsonDict = huffmanDictRepository.getAllByHash(hash).getDict(); //String json dict from database
+        String binaryCode = huffmanDataRepository.getAllByHash(hash).getBinaryCode().substring(1); //String binary code from database
+        DictDecoder dictDecoder = new DictDecoder(jsonDict); //gson load json dict
+        Map<Character, String> dictMap =  dictDecoder.decode().getMapDict(); //get map dict
+        HuffmanBinaryMsgDecoder msgDecoder = new HuffmanBinaryMsgDecoder(dictMap, binaryCode);
+        return msgDecoder.decode();
     }
 
     /**
