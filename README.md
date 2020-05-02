@@ -1,8 +1,8 @@
-# Huffman Trasmission Core
+# Huffman Trasmission Core Spring
 
 哈夫曼编码实现P2P模式通讯
 
-这是实现通讯的后端部分
+这是实现通讯的后端部分，前端部分请移步[huffman-transmission-electron](https://github.com/WeiYuanStudio/huffman-transmission-electron)
 
 ## API V1.0
 
